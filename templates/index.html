@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>India Weather Condition Predictor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <main class="container">
+        <section class="card">
+            <h1>India Weather Condition Predictor</h1>
+            <p class="lead">Provide the recent atmospheric readings and the model will estimate the prevailing weather condition.</p>
+            {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+            {% endif %}
+            {% if prediction %}
+            <div class="alert alert-success">
+                <strong>{{ prediction.condition }}</strong>
+                <span>(confidence {{ '%.1f'|format(prediction.confidence * 100) }}%)</span>
+            </div>
+            <details class="probabilities">
+                <summary>Detailed probabilities</summary>
+                <ul>
+                    {% for label, prob in prediction.probabilities.items() %}
+                    <li><span>{{ label }}</span><span>{{ '%.1f'|format(prob * 100) }}%</span></li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+            <form method="post" class="form-grid">
+                <label>
+                    Region
+                    <select name="region" required>
+                        {% for region in regions %}
+                        <option value="{{ region }}" {% if form_data.region == region %}selected{% endif %}>{{ region }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Month
+                    <select name="month" required>
+                        {% for month in months %}
+                        <option value="{{ month }}" {% if month == form_data.month|int %}selected{% endif %}>{{ month }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>
+                    Temperature (°C)
+                    <input name="temperature_c" type="number" step="0.1" required value="{{ form_data.temperature_c }}">
+                </label>
+                <label>
+                    Humidity (%)
+                    <input name="humidity_pct" type="number" step="0.1" required value="{{ form_data.humidity_pct }}">
+                </label>
+                <label>
+                    Pressure (hPa)
+                    <input name="pressure_hpa" type="number" step="0.1" required value="{{ form_data.pressure_hpa }}">
+                </label>
+                <label>
+                    Wind speed (km/h)
+                    <input name="wind_speed_kph" type="number" step="0.1" required value="{{ form_data.wind_speed_kph }}">
+                </label>
+                <label>
+                    Precipitation (mm)
+                    <input name="precip_mm" type="number" step="0.1" required value="{{ form_data.precip_mm }}">
+                </label>
+                <label>
+                    Cloud cover (%)
+                    <input name="cloud_cover_pct" type="number" step="0.1" required value="{{ form_data.cloud_cover_pct }}">
+                </label>
+                <button type="submit" class="btn-primary">Predict</button>
+            </form>
+        </section>
+        <section class="card secondary">
+            <h2>API usage</h2>
+            <p>Send a <code>POST</code> request to <code>/api/predict</code> with JSON:</p>
+            <pre><code>{
+  "region": "South",
+  "month": 7,
+  "temperature_c": 29.5,
+  "humidity_pct": 82,
+  "pressure_hpa": 1002,
+  "wind_speed_kph": 14,
+  "precip_mm": 18,
+  "cloud_cover_pct": 78
+}</code></pre>
+        </section>
+    </main>
+</body>
+</html>
