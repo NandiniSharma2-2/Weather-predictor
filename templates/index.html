@@ -1,90 +1,1779 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark" data-weather="clear">
 <head>
     <meta charset="UTF-8">
-    <title>India Weather Condition Predictor</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galactus Weather | Atmospheric Predictor</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            --font-display: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+            --transition-speed: 0.6s;
+        }
+
+        /* DARK THEME (Updated for Glassmorphism) */
+        [data-theme="dark"] {
+            --bg-image: url('https://images.unsplash.com/photo-1534088568595-a066f410bcda?q=80&w=2551&auto=format&fit=crop');
+            
+            --bg-color: #050b14;
+            --primary-neon: #00f3ff;
+            --secondary-neon: #bc13fe;
+            --alert-red: #ff2a6d;
+            --alert-bg: rgba(255, 42, 109, 0.1);
+            
+            --glass-bg: rgba(10, 15, 35, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.16);
+            --backdrop-blur: 26px; 
+            
+            --text-main: #ffffff;
+            --text-muted: #cbd5f5;
+            --text-halo: none;
+            
+            --input-bg: rgba(0, 0, 0, 0.35);
+            --input-border: rgba(255, 255, 255, 0.12);
+            --input-shadow: inset 0 2px 4px rgba(0,0,0,0.35);
+            --focus-glow: rgba(0, 243, 255, 0.4);
+            
+            --scanline-opacity: 0.02;
+            --sun-gradient: linear-gradient(to bottom, #ff00cc, #333399);
+            --sun-shadow: rgba(188, 19, 254, 0.8);
+            
+            --sky-gradient: transparent; 
+            
+            --title-color: #ffffff;
+            --title-shadow: 0 0 18px rgba(0, 243, 255, 0.6);
+            --card-shadow: 0 28px 70px rgba(0,0,0,0.75); 
+            --nav-bg: rgba(0,0,0,0.45);
+            --nav-active: rgba(255, 255, 255, 0.12);
+
+            --card-pattern: radial-gradient(circle at 0 0, rgba(188,19,254,0.35), transparent 60%),
+                            radial-gradient(circle at 100% 100%, rgba(0,243,255,0.25), transparent 55%);
+            --blend-mode: screen;
+        }
+
+        /* LIGHT THEME (Updated for Glassmorphism) */
+        [data-theme="light"] {
+            --bg-image: url('https://images.unsplash.com/photo-1622396481328-9b1b78cdd9fd?q=80&w=2574&auto=format&fit=crop');
+
+            --bg-color: #e2f2ff;
+            --primary-neon: #2563eb; 
+            --secondary-neon: #db2777; 
+            --alert-red: #dc2626;
+            --alert-bg: rgba(220, 38, 38, 0.1);
+
+            --glass-bg: rgba(255, 255, 255, 0.88);
+            --glass-border: rgba(148, 163, 184, 0.55);
+            --backdrop-blur: 24px;
+            
+            --text-main: #0f172a; 
+            --text-muted: #475569;
+            --text-halo: none;
+            
+            --input-bg: rgba(248, 250, 252, 0.9); 
+            --input-border: rgba(148, 163, 184, 0.6);
+            --input-shadow: inset 0 1px 2px rgba(15,23,42,0.06);
+            --focus-glow: rgba(37, 99, 235, 0.22);
+            
+            --scanline-opacity: 0.006;
+            --sun-gradient: linear-gradient(to bottom, #fbbf24, #f97316);
+            --sun-shadow: rgba(251, 191, 36, 0.75);
+            --sky-gradient: transparent;
+            
+            --title-color: #020617;
+            --title-shadow: none;
+            --card-shadow: 0 22px 60px rgba(15, 23, 42, 0.16);
+            --nav-bg: rgba(255,255,255,0.95);
+            --nav-active: rgba(226, 232, 240, 0.95);
+
+            --card-pattern: radial-gradient(circle at 0 0, rgba(37,99,235,0.13), transparent 60%),
+                            radial-gradient(circle at 100% 100%, rgba(220,38,38,0.13), transparent 55%);
+            --blend-mode: normal;
+        }
+
+        /* --- DYNAMIC WEATHER BACKGROUNDS --- */
+        [data-weather="sunny"] { --bg-image: url('https://images.unsplash.com/photo-1501854140884-074cf2b21d25?q=80&w=2600&auto=format&fit=crop'); }
+        [data-weather="cloudy"] { --bg-image: url('https://images.unsplash.com/photo-1500740516770-92bd0044284d?q=80&w=2600&auto=format&fit=crop'); }
+        [data-weather="rain"] { --bg-image: url('https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=2574&auto=format&fit=crop'); }
+        [data-weather="storm"] { --bg-image: url('https://images.unsplash.com/photo-1605727216801-e27ce1d0cc28?q=80&w=2671&auto=format&fit=crop'); }
+        [data-weather="snow"] { --bg-image: url('https://images.unsplash.com/photo-1478265867543-4655763268c9?q=80&w=2670&auto=format&fit=crop'); }
+
+        * {
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-neon) transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font-body);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+            text-shadow: var(--text-halo);
+            padding: 32px 16px;
+        }
+
+        /* --- IMMERSIVE BACKGROUND --- */
+        .sky-container {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            transition: background-image 1s ease-in-out;
+        }
+        
+        .sky-container::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top, rgba(15,23,42,0.35), transparent 55%),
+                        linear-gradient(to bottom, rgba(15,23,42,0.65), rgba(15,23,42,0.9));
+            z-index: 0;
+        }
+
+        [data-theme="light"] .sky-container::after {
+            background: linear-gradient(to bottom, rgba(255,255,255,0.55), rgba(148,163,184,0.2));
+        }
+
+        .sky-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0);
+            transition: background 0.8s ease;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        [data-weather="storm"] .sky-container::before {
+            background: rgba(0,0,0,0.4);
+            animation: lightningFlash 3s infinite;
+        }
+        @keyframes lightningFlash {
+            0%, 95% { background-color: rgba(0,0,0,0.4); }
+            96% { background-color: rgba(255,255,255,0.2); }
+            97% { background-color: rgba(0,0,0,0.5); }
+            98% { background-color: rgba(255,255,255,0.2); }
+            100% { background-color: rgba(0,0,0,0.4); }
+        }
+
+        [data-weather="cloudy"] .sky-container::before {
+            background: rgba(15,23,42,0.2);
+        }
+
+        [data-weather="sunny"] .sky-container::before {
+            background: radial-gradient(circle at top, rgba(253,224,71,0.18), transparent 55%);
+            mix-blend-mode: soft-light;
+        }
+
+        .cyber-sun {
+            position: absolute;
+            top: 6%;
+            right: 10%;
+            width: 150px;
+            height: 150px;
+            background: var(--sun-gradient);
+            border-radius: 50%;
+            box-shadow: 0 0 40px var(--sun-shadow), 0 0 80px var(--sun-shadow), inset 0 0 40px rgba(255,255,255,0.9);
+            animation: sunPulse 4s infinite alternate;
+            opacity: 0.9;
+            transition: all 1s ease;
+            z-index: 1;
+            display: none; 
+        }
+        
+        [data-weather="sunny"] .cyber-sun { display: block; opacity: 1; transform: scale(1.5); box-shadow: 0 0 100px var(--sun-shadow), 0 0 200px var(--sun-shadow), 0 0 280px var(--primary-neon); }
+        [data-weather="cloudy"] .cyber-sun { display: block; opacity: 0.12; transform: scale(0.9); filter: blur(5px); }
+        [data-weather="rain"] .cyber-sun { display: none; }
+
+        .cloud-layer {
+            position: absolute;
+            inset: 0;
+            background: url('https://raw.githubusercontent.com/yjl9903/yjl9903.github.io/master/bg/cloud.png');
+            background-size: cover;
+            opacity: 0.4;
+            filter: hue-rotate(180deg) brightness(0.8) contrast(1.2);
+            transition: all 1s ease;
+            z-index: 2;
+        }
+        
+        [data-theme="light"] .cloud-layer { filter: none; opacity: 0.75; mix-blend-mode: soft-light; }
+
+        [data-weather="sunny"] .cloud-layer { opacity: 0; }
+        [data-weather="cloudy"] .cloud-layer { opacity: 0.85; transform: scale(1.05); }
+        [data-weather="rain"] .cloud-layer { opacity: 0.7; filter: brightness(0.3); }
+        [data-weather="storm"] .cloud-layer { opacity: 0.98; filter: brightness(0.12) contrast(1.5); }
+        
+        .cloud-1 { animation: drift 65s linear infinite; z-index: 1; transform: scale(1.4); }
+        .cloud-2 { animation: drift 90s linear infinite reverse; z-index: 2; opacity: 0.22; top: -100px; }
+        .cloud-3 { animation: drift 120s linear infinite; z-index: 3; opacity: 0.1; bottom: -100px; }
+
+        .precip-container {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        .rain {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.6));
+            background-size: 2px 40px;
+            animation: rainfall 0.25s linear infinite;
+            opacity: 0; 
+            transition: opacity 0.5s ease;
+        }
+
+        [data-theme="light"] .rain { 
+            background-image: linear-gradient(to bottom, rgba(0, 100, 255, 0), #2563eb); 
+        }
+
+        .snow {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, #fff 40%, transparent 40%);
+            background-size: 15px 15px;
+            animation: snowfall 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        [data-theme="light"] .snow {
+            background-image: radial-gradient(circle, #bfdbfe 40%, transparent 40%);
+        }
+
+        [data-weather="rain"] .rain { opacity: 0.55; }
+        [data-weather="storm"] .rain { opacity: 0.8; animation-duration: 0.16s; background-size: 3px 52px; }
+        [data-weather="snow"] .snow { opacity: 0.9; }
+        
+        @keyframes sunPulse { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(1.06); opacity: 1; } }
+        @keyframes drift { from { background-position: 0 0; } to { background-position: 2000px 0; } }
+        @keyframes rainfall { 0% { background-position: 0 0; } 100% { background-position: 20px 40px; } }
+        @keyframes snowfall { 0% { background-position: 0 0; } 100% { background-position: 100px 600px; } }
+
+        /* --- LAYOUT --- */
+        .view-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hidden { display: none !important; }
+
+        /* HEADER CONTROLS */
+        .header-controls {
+            position: fixed;
+            top: 20px;
+            right: 24px;
+            z-index: 100;
+            display: flex;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--primary-neon);
+            width: 44px; height: 44px;
+            border-radius: 999px;
+            cursor: pointer;
+            backdrop-filter: blur(var(--backdrop-blur));
+            transition: all 0.3s ease;
+            box-shadow: 0 0 18px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .icon-btn:hover {
+            transform: translateY(-2px) scale(1.06);
+            box-shadow: 0 0 26px rgba(56,189,248,0.7);
+            background: radial-gradient(circle at top left, rgba(59,130,246,0.35), rgba(15,23,42,0.8));
+        }
+        .icon-btn.muted {
+            color: var(--text-muted);
+            border-color: rgba(148,163,184,0.6);
+            box-shadow: none;
+        }
+
+        /* --- CARDS & GLASSMORPHISM --- */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1180px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            gap: 1.75rem;
+            animation: hudBoot 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Dashboard layout (main + side panel) */
+        .app-layout {
+            grid-template-columns: minmax(0, 2.2fr) minmax(260px, 1fr);
+            grid-template-rows: auto 1fr;
+            align-items: start;
+        }
+
+        #login-view .container {
+            max-width: 440px;
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .card {
+            background: var(--glass-bg);
+            background-image: var(--card-pattern);
+            background-blend-mode: var(--blend-mode);
+            backdrop-filter: blur(var(--backdrop-blur));
+            -webkit-backdrop-filter: blur(var(--backdrop-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 2.4rem 2.6rem;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            transition: all var(--transition-speed) ease, transform 0.22s ease;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 32px 90px rgba(15,23,42,0.85);
+        }
+
+        .scanline {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(148,163,184,0.22) 50%);
+            opacity: var(--scanline-opacity);
+            background-size: 100% 4px;
+            pointer-events: none;
+            border-radius: 32px;
+        }
+
+        h1 {
+            font-family: var(--font-display);
+            font-size: 2.25rem;
+            margin: 0;
+            color: var(--title-color);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            animation: titleLevitate 4s ease-in-out infinite;
+            transition: color var(--transition-speed) ease;
+            text-shadow: var(--title-shadow);
+        }
+
+        @keyframes titleLevitate {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .lead {
+            color: var(--text-muted);
+            font-size: 1.02rem;
+            margin-bottom: 1.75rem;
+            border-bottom: 1px solid rgba(148,163,184,0.4);
+            padding-bottom: 0.9rem;
+            font-weight: 500;
+        }
+
+        .pill-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.25rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.7);
+            font-size: 0.7rem;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.9rem;
+            background: radial-gradient(circle at top left, rgba(148,163,184,0.35), transparent 55%);
+        }
+
+        .pill-tag-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #22c55e;
+            box-shadow: 0 0 0 6px rgba(34,197,94,0.28);
+        }
+
+        /* --- USER NAVIGATION BAR --- */
+        .user-nav {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--nav-bg);
+            border: 1px solid var(--glass-border);
+            padding: 0.7rem 1.4rem;
+            border-radius: 999px;
+            backdrop-filter: blur(var(--backdrop-blur));
+        }
+
+        .user-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .product-mark {
+            width: 32px;
+            height: 32px;
+            border-radius: 12px;
+            border: 1px solid rgba(148,163,184,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            background: radial-gradient(circle at top left, rgba(0,243,255,0.4), transparent 60%);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-family: var(--font-display);
+            text-transform: uppercase;
+        }
+
+        .user-name-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--primary-neon);
+        }
+
+        .user-role {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            letter-spacing: 1.2px;
+        }
+        
+        .nav-tabs { display: flex; gap: 4px; }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 0.45rem 0.9rem;
+            cursor: pointer;
+            font-family: var(--font-body);
+            text-transform: uppercase;
+            font-weight: 600;
+            font-size: 0.78rem;
+            transition: all 0.22s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-shadow: none;
+            border-radius: 999px;
+        }
+
+        .nav-btn:hover { color: var(--primary-neon); background: rgba(148,163,184,0.12); }
+        .nav-btn.active { 
+            color: var(--primary-neon); 
+            background: var(--nav-active); 
+            border: 1px solid var(--glass-border); 
+            box-shadow: 0 0 0 1px rgba(56,189,248,0.4);
+        }
+
+        /* --- SIDE PANEL --- */
+        .main-card {
+            grid-column: 1 / 2;
+        }
+
+        .side-card {
+            grid-column: 2 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+            padding: 1.9rem 1.9rem;
+        }
+
+        .side-header-title {
+            font-family: var(--font-display);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .side-clock {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-top: 0.4rem;
+        }
+
+        .side-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .side-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 0.9rem;
+            margin-top: 1.1rem;
+        }
+
+        .side-stat {
+            padding: 0.75rem 0.85rem;
+            border-radius: 18px;
+            border: 1px solid rgba(148,163,184,0.55);
+            background: linear-gradient(135deg, rgba(148,163,184,0.1), rgba(15,23,42,0.1));
+            font-size: 0.78rem;
+        }
+
+        .side-stat-label {
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+        }
+
+        .side-stat-value {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+        }
+
+        .side-footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px dashed rgba(148,163,184,0.45);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.7);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .status-dot-green {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: #22c55e;
+        }
+
+        /* --- FORMS & BUTTONS --- */
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1.4rem; 
+        }
+        .login-form { display: flex; flex-direction: column; gap: 1.4rem; }
+
+        label {
+            color: var(--primary-neon);
+            font-size: 0.9rem; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.7rem; 
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: none;
+        }
+        
+        [data-theme="dark"] label { text-shadow: 0 0 5px rgba(0, 243, 255, 0.35); }
+
+        input, select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-main);
+            padding: 0.9rem 1rem;
+            font-family: 'Rajdhani', monospace;
+            font-size: 1.05rem;
+            font-weight: 600;
+            transition: all 0.25s;
+            border-radius: 14px;
+            box-shadow: var(--input-shadow);
+            text-shadow: none; 
+        }
+
+        select option { background-color: #020617; color: #e5e7eb; }
+        [data-theme="light"] select option { background-color: #f1f5f9; color: #020617; }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 0 1px var(--focus-glow), var(--input-shadow);
+        }
+        
+        .btn-primary {
+            grid-column: 1 / -1; 
+            background: radial-gradient(circle at top left, rgba(0, 243, 255, 0.18), rgba(15,23,42,0.9)); 
+            border: 1px solid var(--primary-neon); 
+            color: var(--primary-neon);
+            padding: 1rem 1.2rem; 
+            font-family: var(--font-display); 
+            font-size: 1rem; 
+            text-transform: uppercase; 
+            letter-spacing: 3px;
+            cursor: pointer; 
+            transition: all 0.25s; 
+            position: relative; 
+            overflow: hidden; 
+            margin-top: 1rem; 
+            font-weight: 700;
+            text-shadow: none;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.35) 40%, transparent 80%);
+            transform: translateX(-120%);
+            transition: transform 0.5s ease;
+        }
+
+        .btn-primary:hover { 
+            background: var(--primary-neon); 
+            color: #020617; 
+            box-shadow: 0 22px 50px rgba(56,189,248,0.55);
+        }
+        .btn-primary:hover::after {
+            transform: translateX(120%);
+        }
+
+        .btn-danger { 
+            border-color: var(--alert-red); 
+            color: var(--alert-red); 
+            background: rgba(248,113,113,0.04); 
+        }
+        .btn-danger:hover { 
+            background: var(--alert-red); 
+            color: white; 
+            box-shadow: 0 0 30px rgba(248,113,113,0.55); 
+        }
+
+        .diag-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 1rem;
+        }
+        
+        .btn-diag {
+            background: rgba(15,23,42,0.3);
+            border: 1px solid rgba(148,163,184,0.6);
+            color: var(--text-muted);
+            padding: 0.65rem 0.7rem;
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+            text-shadow: none;
+            border-radius: 999px;
+        }
+        
+        .btn-diag:hover {
+            color: var(--primary-neon);
+            border-color: var(--primary-neon);
+            background: rgba(0, 243, 255, 0.08);
+        }
+
+        /* --- RESULTS --- */
+        .alert {
+            background: rgba(16, 185, 129, 0.1); 
+            border: 1px solid #10b981; 
+            color: #6ee7b7;
+            padding: 1.2rem 1.1rem; 
+            margin-bottom: 1.5rem; 
+            display: grid; 
+            grid-template-columns: auto 1fr auto;
+            align-items: center; 
+            gap: 16px; 
+            animation: slideDown 0.4s ease-out; 
+            position: relative; 
+            overflow: hidden;
+            text-shadow: none;
+            border-radius: 22px;
+        }
+        
+        [data-theme="light"] .alert { 
+            background: rgba(22,163,74,0.1); 
+            border-color: #16a34a; 
+            color: #16a34a; 
+        }
+
+        .alert-error { 
+            background: var(--alert-bg); 
+            border-color: var(--alert-red); 
+            color: var(--alert-red); 
+        }
+
+        .weather-icon-large { width: 42px; height: 42px; animation: float 3s ease-in-out infinite; }
+        
+        .advisory-text {
+            grid-column: 1 / -1;
+            margin-top: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            font-style: italic;
+            border-top: 1px solid rgba(148,163,184,0.4);
+            padding-top: 0.5rem;
+        }
+
+        .comparison-module {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed rgba(148,163,184,0.6);
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .comp-header {
+            font-family: var(--font-display);
+            color: var(--secondary-neon);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .comp-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .comp-col h4 {
+            margin: 0 0 0.4rem 0;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+        .comp-val {
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: var(--font-display);
+        }
+        .diff-up { color: #22c55e; }
+        .diff-down { color: var(--alert-red); }
+
+        details.probabilities summary {
+            color: var(--text-muted); 
+            cursor: pointer; 
+            padding: 0.9rem 1rem; 
+            background: rgba(15,23,42,0.45);
+            border: 1px solid rgba(148,163,184,0.6); 
+            font-family: var(--font-display); 
+            letter-spacing: 1px; 
+            transition: 0.25s;
+            border-radius: 18px;
+            font-size: 0.78rem;
+        }
+        [data-theme="light"] details.probabilities summary {
+            background: rgba(241,245,249,0.9);
+        }
+
+        details.probabilities summary:hover { 
+            color: var(--primary-neon); 
+            border-color: var(--primary-neon); 
+        }
+        
+        details.probabilities ul {
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 10px; 
+            list-style: none; 
+            padding: 0.9rem; 
+            margin: 0; 
+            background: rgba(15,23,42,0.3);
+            border-radius: 18px; 
+            margin-top: 10px;
+        }
+        [data-theme="light"] details.probabilities ul {
+            background: rgba(248,250,252,0.9);
+        }
+
+        details.probabilities li { 
+            text-align: center; 
+            padding: 10px; 
+            border: 1px solid rgba(148,163,184,0.6); 
+            color: var(--text-muted); 
+            border-radius: 12px; 
+            font-size: 0.8rem;
+        }
+        details.probabilities li span:last-child { 
+            display: block; 
+            font-family: var(--font-display); 
+            color: var(--primary-neon); 
+            font-size: 1.02rem; 
+        }
+
+        /* HISTORY */
+        .history-list {
+            list-style: none; padding: 0; margin: 0;
+            display: flex; flex-direction: column; gap: 0.9rem;
+            max-height: 460px; overflow-y: auto;
+        }
+
+        .history-item {
+            background: rgba(15,23,42,0.65);
+            border: 1px solid rgba(148,163,184,0.65);
+            padding: 0.9rem 1rem;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: all 0.2s;
+            border-radius: 18px;
+            font-size: 0.86rem;
+        }
+
+        [data-theme="light"] .history-item {
+            background: rgba(248,250,252,0.9);
+        }
+
+        .history-item:hover { 
+            background: rgba(56,189,248,0.08); 
+            border-color: var(--primary-neon); 
+        }
+        .history-meta { 
+            font-size: 0.76rem; 
+            color: var(--text-muted); 
+            margin-bottom: 0.25rem; 
+        }
+        .history-condition { 
+            font-family: var(--font-display); 
+            font-size: 1rem; 
+            color: var(--text-main); 
+        }
+
+        /* Animations & Loader */
+        @keyframes hudBoot { 0% { opacity: 0; transform: scale(0.97) translateY(8px); filter: blur(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loader {
+            display: none; 
+            width: 18px; 
+            height: 18px; 
+            border: 2px solid var(--primary-neon); 
+            border-bottom-color: transparent;
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* LOGIN HEADER */
+        .login-logo {
+            width: 62px;
+            height: 62px;
+            border-radius: 22px;
+            border: 1px solid rgba(148,163,184,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            background: radial-gradient(circle at top left, rgba(0,243,255,0.4), transparent 60%);
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .login-subtext {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 1024px) {
+            .app-layout {
+                grid-template-columns: minmax(0,1fr);
+            }
+            .side-card {
+                grid-column: 1 / -1;
+                order: 2;
+            }
+            .main-card {
+                order: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 90px 12px 24px; }
+            .container { gap: 1.2rem; }
+            .card { padding: 1.7rem 1.5rem; }
+            h1 { font-size: 1.5rem; }
+            .user-nav { 
+                flex-direction: column; 
+                gap: 10px; 
+                align-items: stretch;
+                border-radius: 24px;
+            }
+            .nav-tabs { justify-content: space-between; }
+            details.probabilities ul { grid-template-columns: 1fr 1fr; }
+            .header-controls { top: 14px; right: 14px; }
+            .side-stat-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-    <main class="container">
-        <section class="card">
-            <h1>India Weather Condition Predictor</h1>
-            <p class="lead">Provide the recent atmospheric readings and the model will estimate the prevailing weather condition.</p>
-            {% if error %}
-            <div class="alert alert-error">{{ error }}</div>
-            {% endif %}
-            {% if prediction %}
-            <div class="alert alert-success">
-                <strong>{{ prediction.condition }}</strong>
-                <span>(confidence {{ '%.1f'|format(prediction.confidence * 100) }}%)</span>
-            </div>
-            <details class="probabilities">
-                <summary>Detailed probabilities</summary>
-                <ul>
-                    {% for label, prob in prediction.probabilities.items() %}
-                    <li><span>{{ label }}</span><span>{{ '%.1f'|format(prob * 100) }}%</span></li>
-                    {% endfor %}
-                </ul>
-            </details>
-            {% endif %}
-            <form method="post" class="form-grid">
-                <label>
-                    Region
-                    <select name="region" required>
-                        {% for region in regions %}
-                        <option value="{{ region }}" {% if form_data.region == region %}selected{% endif %}>{{ region }}</option>
-                        {% endfor %}
-                    </select>
-                </label>
-                <label>
-                    Month
-                    <select name="month" required>
-                        {% for month in months %}
-                        <option value="{{ month }}" {% if month == form_data.month|int %}selected{% endif %}>{{ month }}</option>
-                        {% endfor %}
-                    </select>
-                </label>
-                <label>
-                    Temperature (°C)
-                    <input name="temperature_c" type="number" step="0.1" required value="{{ form_data.temperature_c }}">
-                </label>
-                <label>
-                    Humidity (%)
-                    <input name="humidity_pct" type="number" step="0.1" required value="{{ form_data.humidity_pct }}">
-                </label>
-                <label>
-                    Pressure (hPa)
-                    <input name="pressure_hpa" type="number" step="0.1" required value="{{ form_data.pressure_hpa }}">
-                </label>
-                <label>
-                    Wind speed (km/h)
-                    <input name="wind_speed_kph" type="number" step="0.1" required value="{{ form_data.wind_speed_kph }}">
-                </label>
-                <label>
-                    Precipitation (mm)
-                    <input name="precip_mm" type="number" step="0.1" required value="{{ form_data.precip_mm }}">
-                </label>
-                <label>
-                    Cloud cover (%)
-                    <input name="cloud_cover_pct" type="number" step="0.1" required value="{{ form_data.cloud_cover_pct }}">
-                </label>
-                <button type="submit" class="btn-primary">Predict</button>
-            </form>
-        </section>
-        <section class="card secondary">
-            <h2>API usage</h2>
-            <p>Send a <code>POST</code> request to <code>/api/predict</code> with JSON:</p>
-            <pre><code>{
-  "region": "South",
-  "month": 7,
-  "temperature_c": 29.5,
-  "humidity_pct": 82,
-  "pressure_hpa": 1002,
-  "wind_speed_kph": 14,
-  "precip_mm": 18,
-  "cloud_cover_pct": 78
-}</code></pre>
-        </section>
-    </main>
+    
+    <!-- Top Right Controls -->
+    <div class="header-controls">
+        <button class="icon-btn" id="soundBtn" aria-label="Toggle Sound">
+            <i data-lucide="volume-2" id="soundIcon"></i>
+        </button>
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle Theme">
+            <i data-lucide="sun" id="themeIcon"></i>
+        </button>
+    </div>
+
+    <!-- Environmental Effects Layer -->
+    <div class="sky-container">
+        <div class="cyber-sun"></div>
+        <div class="cloud-layer cloud-1"></div>
+        <div class="cloud-layer cloud-2"></div>
+        <div class="cloud-layer cloud-3"></div>
+        <div class="precip-container">
+            <div class="rain"></div>
+            <div class="snow"></div>
+        </div>
+    </div>
+
+    <!-- VIEW 1: LOGIN PAGE -->
+    <div id="login-view" class="view-container">
+        <div class="container">
+            <section class="card">
+                <div class="scanline"></div>
+                
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div class="login-logo">
+                        GW
+                    </div>
+                    <p class="login-subtext">Galactus Weather Core</p>
+                    <h1 style="justify-content: center; font-size: 1.7rem; margin-top: 0.8rem;">
+                        <i data-lucide="shield-check" size="20"></i>
+                        Identity Verification
+                    </h1>
+                    <p class="lead" style="border:none; margin-bottom: 0.4rem; margin-top: 0.6rem;">Restricted Access: Authorized Personnel Only</p>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); letter-spacing: 1.8px; text-transform: uppercase;">
+                        Secure Session • Encrypted Link Established
+                    </div>
+                </div>
+                
+                <form id="login-form" class="login-form">
+                    <div>
+                        <label><i data-lucide="user" size="14"></i> Operative ID</label>
+                        <input type="text" id="username-input" required placeholder="G-7294" value="COMMANDER">
+                    </div>
+                    <div>
+                        <label><i data-lucide="lock" size="14"></i> Access Key</label>
+                        <input type="password" required placeholder="••••••••" value="password">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-text">Authenticate</span>
+                        <div class="loader"></div>
+                    </button>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <!-- VIEW 2: MAIN DASHBOARD -->
+    <div id="app-view" class="view-container hidden">
+        <main class="container app-layout">
+            
+            <!-- User Navigation Bar -->
+            <nav class="user-nav">
+                <div class="user-left">
+                    <div class="product-mark">GW</div>
+                    <div class="user-info">
+                        <div class="user-name-line">
+                            <i data-lucide="user-circle" size="16"></i>
+                            <span id="display-username">Unknown User</span>
+                        </div>
+                        <span class="user-role">Atmospheric Command • India Grid</span>
+                    </div>
+                </div>
+                <div class="nav-tabs">
+                    <button class="nav-btn active" onclick="switchTab('predict')"><i data-lucide="zap"></i> Command</button>
+                    <button class="nav-btn" onclick="switchTab('history')"><i data-lucide="database"></i> Logs</button>
+                    <button class="nav-btn" onclick="switchTab('settings')"><i data-lucide="sliders-horizontal"></i> Config</button>
+                    <button class="nav-btn" onclick="logout()" title="End Session"><i data-lucide="log-out"></i></button>
+                </div>
+            </nav>
+
+            <!-- Main Card -->
+            <section class="card main-card">
+                <div class="scanline"></div>
+                
+                <!-- TAB 1: PREDICTION FORM -->
+                <div id="tab-predict">
+                    <div class="pill-tag">
+                        <span class="pill-tag-dot"></span>
+                        Real-Time Synthetic Model
+                    </div>
+                    <h1>
+                        <i data-lucide="satellite" size="26"></i>
+                        Galactus Weather Core
+                    </h1>
+                    <p class="lead">Atmospheric telemetry &amp; predictive modeling interface for Indian sectors.</p>
+                    
+                    <!-- Prediction Result -->
+                    <div id="result-box" class="alert" style="display: none;">
+                        <i id="result-icon" data-lucide="cloud-rain" class="weather-icon-large"></i>
+                        <div>
+                            <span style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.72rem;">Forecast Condition</span>
+                            <div id="pred-condition" style="font-family: var(--font-display); font-size: 1.7rem; font-weight: bold;">RAIN</div>
+                        </div>
+                        <div class="confidence-meter" style="text-align:right;">
+                            <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.1px;">Confidence</div>
+                            <div id="pred-confidence" class="confidence-val" style="font-family: var(--font-display); font-size: 1.3rem;">92.5%</div>
+                        </div>
+                        <div id="pred-advice" class="advisory-text"></div>
+                    </div>
+                    
+                    <!-- Comparison Module -->
+                    <div id="comparison-box" class="comparison-module" style="display: none;">
+                        <div class="comp-header">
+                            <i data-lucide="bar-chart-2" size="18"></i> Temporal Comparison
+                        </div>
+                        <div class="comp-grid">
+                            <div class="comp-col">
+                                <h4>Current Cycle</h4>
+                                <div class="comp-val" style="color: var(--primary-neon);">
+                                    <span id="comp-temp-now">--</span><span class="temp-unit">°C</span>
+                                </div>
+                                <div style="font-size:0.85rem; color:var(--text-muted);">Thermal signature</div>
+                            </div>
+                            <div class="comp-col">
+                                <h4>Last Cycle (Avg)</h4>
+                                <div class="comp-val" style="color: var(--text-muted);">
+                                    <span id="comp-temp-last">--</span><span class="temp-unit">°C</span>
+                                    <span id="comp-temp-diff" style="font-size: 0.8rem; vertical-align: middle; margin-left: 5px;"></span>
+                                </div>
+                                <div style="font-size:0.85rem; color:var(--text-muted);">Historical deviation</div>
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="margin-top: 1rem; padding: 0.7rem 1.1rem;" onclick="document.getElementById('comparison-box').style.display='none'">
+                            Dismiss Analysis
+                        </button>
+                    </div>
+
+                    <button id="btn-show-compare" class="btn-primary" style="display:none; margin-bottom: 1.6rem; background: transparent; border: 1px dashed var(--primary-neon); color: var(--primary-neon); box-shadow:none;">
+                        <i data-lucide="git-compare" size="16"></i> Compare vs Last Cycle
+                    </button>
+
+                    <details id="prob-box" class="probabilities" style="display: none;">
+                        <summary>Probability Matrix Analysis</summary>
+                        <ul>
+                            <li><span>Sunny</span><span>1.2%</span></li>
+                            <li><span>Cloudy</span><span>4.3%</span></li>
+                            <li><span>Rain</span><span>92.5%</span></li>
+                            <li><span>Storm</span><span>2.0%</span></li>
+                        </ul>
+                    </details>
+
+                    <form id="prediction-form" method="post" class="form-grid">
+                        <label><i data-lucide="map-pin" size="14"></i> Region Sector</label>
+                        <select name="region" id="region-select" required>
+                            <option value="North">North Sector</option>
+                            <option value="South" selected>South Sector</option>
+                            <option value="Central">Central Sector</option>
+                            <option value="East">East Sector</option>
+                            <option value="West">West Sector</option>
+                        </select>
+
+                        <label><i data-lucide="calendar" size="14"></i> Temporal Cycle</label>
+                        <select name="month" required>
+                            <option value="1">Cycle 01 (JAN)</option>
+                            <option value="2">Cycle 02 (FEB)</option>
+                            <option value="3">Cycle 03 (MAR)</option>
+                            <option value="4">Cycle 04 (APR)</option>
+                            <option value="5">Cycle 05 (MAY)</option>
+                            <option value="6">Cycle 06 (JUN)</option>
+                            <option value="7" selected>Cycle 07 (JUL)</option>
+                            <option value="8">Cycle 08 (AUG)</option>
+                            <option value="9">Cycle 09 (SEP)</option>
+                            <option value="10">Cycle 10 (OCT)</option>
+                            <option value="11">Cycle 11 (NOV)</option>
+                            <option value="12">Cycle 12 (DEC)</option>
+                        </select>
+
+                        <div style="grid-column: 1 / -1; height: 1px; background: rgba(148,163,184,0.6); margin: 0.9rem 0;"></div>
+
+                        <div>
+                            <label><i data-lucide="thermometer" size="14"></i> <span id="label-temp">Thermal (°C)</span></label>
+                            <input name="temperature_c" id="input-temp" type="number" step="0.1" required value="29.5">
+                        </div>
+                        <div>
+                            <label><i data-lucide="droplets" size="14"></i> Humidity (%)</label>
+                            <input name="humidity_pct" type="number" step="0.1" required value="82.0">
+                        </div>
+                        <div>
+                            <label><i data-lucide="gauge" size="14"></i> Barometric (hPa)</label>
+                            <input name="pressure_hpa" type="number" step="0.1" required value="1002.0">
+                        </div>
+                        <div>
+                            <label><i data-lucide="wind" size="14"></i> Velocity (km/h)</label>
+                            <input name="wind_speed_kph" type="number" step="0.1" required value="14.0">
+                        </div>
+                        <div>
+                            <label><i data-lucide="cloud-rain" size="14"></i> Precip (mm)</label>
+                            <input name="precip_mm" type="number" step="0.1" required value="18.0">
+                        </div>
+                        <div>
+                            <label><i data-lucide="cloud" size="14"></i> Density (%)</label>
+                            <input name="cloud_cover_pct" type="number" step="0.1" required value="78.0">
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">
+                            <span class="btn-text">Initiate Simulation</span>
+                            <div class="loader"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- TAB 2: HISTORY / DATA LOGS -->
+                <div id="tab-history" class="hidden">
+                    <div class="pill-tag">
+                        <span class="pill-tag-dot"></span>
+                        Mission Archive
+                    </div>
+                    <h1>
+                        <i data-lucide="history" size="26"></i>
+                        Data Archives
+                    </h1>
+                    <p class="lead">Historical telemetry and atmospheric outcome records for this operative.</p>
+                    <div id="history-container" class="history-list">
+                        <div style="text-align: center; color: var(--text-muted); padding: 2rem;">No archived data found.</div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: SETTINGS / CONFIG -->
+                <div id="tab-settings" class="hidden">
+                    <div class="pill-tag">
+                        <span class="pill-tag-dot"></span>
+                        System Protocols
+                    </div>
+                    <h1>
+                        <i data-lucide="settings-2" size="26"></i>
+                        System Configuration
+                    </h1>
+                    <p class="lead">Customize interface defaults, visual diagnostics and telemetry units.</p>
+                    
+                    <form class="form-grid" onsubmit="event.preventDefault(); saveSettings();">
+                         <div style="grid-column: 1/-1;">
+                            <label><i data-lucide="map" size="14"></i> Default Target Sector</label>
+                            <select id="setting-region">
+                                <option value="North">North Sector</option>
+                                <option value="South">South Sector</option>
+                                <option value="Central">Central Sector</option>
+                                <option value="East">East Sector</option>
+                                <option value="West">West Sector</option>
+                            </select>
+                        </div>
+
+                        <div style="grid-column: 1/-1;">
+                            <label><i data-lucide="thermometer-sun" size="14"></i> Temperature Unit Protocol</label>
+                            <select id="setting-temp-unit">
+                                <option value="C">Celsius (°C)</option>
+                                <option value="F">Fahrenheit (°F)</option>
+                            </select>
+                        </div>
+                        
+                        <div style="grid-column: 1/-1; margin-top: 0.6rem;">
+                            <label><i data-lucide="monitor" size="14"></i> Visual Systems Diagnostic</label>
+                            <div class="diag-grid">
+                                <button class="btn-diag" onclick="setWeather('clear'); event.preventDefault();">CLEAR</button>
+                                <button class="btn-diag" onclick="setWeather('sunny'); event.preventDefault();">SUNNY</button>
+                                <button class="btn-diag" onclick="setWeather('cloudy'); event.preventDefault();">CLOUDY</button>
+                                <button class="btn-diag" onclick="setWeather('rain'); event.preventDefault();">RAIN</button>
+                                <button class="btn-diag" onclick="setWeather('storm'); event.preventDefault();">STORM</button>
+                                <button class="btn-diag" onclick="setWeather('snow'); event.preventDefault();">SNOW</button>
+                            </div>
+                        </div>
+                        
+                        <div style="grid-column: 1/-1;">
+                            <button class="btn-primary" onclick="saveSettings()">Save Configuration</button>
+                        </div>
+
+                        <div style="grid-column: 1/-1; border-top: 1px solid rgba(148,163,184,0.6); margin-top: 1rem; padding-top: 1rem;">
+                            <label style="color: var(--alert-red);"><i data-lucide="trash-2" size="14"></i> Danger Zone</label>
+                            <button class="btn-primary btn-danger" onclick="clearHistory()">Purge All History Logs</button>
+                        </div>
+                    </form>
+                </div>
+
+            </section>
+
+            <!-- SIDE PANEL -->
+            <aside class="card side-card">
+                <div class="scanline"></div>
+                <div>
+                    <div class="side-header-title">
+                        <span>Live Telemetry</span>
+                        <i data-lucide="activity" size="16"></i>
+                    </div>
+                    <div class="side-clock" id="side-clock">--:--:--</div>
+                    <div class="side-meta">
+                        Local Grid Time • IST<br>
+                        Session ID: <span id="side-session-id">••••••</span>
+                    </div>
+
+                    <div class="side-stat-grid">
+                        <div class="side-stat">
+                            <div class="side-stat-label">Active Sector</div>
+                            <div class="side-stat-value" id="side-region">South Sector</div>
+                        </div>
+                        <div class="side-stat">
+                            <div class="side-stat-label">Visual Theme</div>
+                            <div class="side-stat-value" id="side-theme">Dark Ops</div>
+                        </div>
+                        <div class="side-stat">
+                            <div class="side-stat-label">Atmosphere</div>
+                            <div class="side-stat-value" id="side-weather">Clear Skies</div>
+                        </div>
+                        <div class="side-stat">
+                            <div class="side-stat-label">Last Confidence</div>
+                            <div class="side-stat-value" id="side-confidence">--</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="side-footer">
+                    <span>Galactus Weather Core v1.0 • Synthetic ANN Model</span>
+                    <span class="status-pill">
+                        <span class="status-dot-green"></span> Link Stable
+                    </span>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- SOUND SYSTEM ---
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+                this.masterGain = null;
+                this.initialized = false;
+            }
+
+            init() {
+                if (this.initialized) return;
+                try {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                    this.masterGain = this.ctx.createGain();
+                    this.masterGain.gain.value = 0.3;
+                    this.masterGain.connect(this.ctx.destination);
+                    this.initialized = true;
+                } catch (e) {
+                    console.error("Audio API not supported", e);
+                }
+            }
+
+            toggleMute() {
+                this.muted = !this.muted;
+                if (!this.initialized) this.init();
+                if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+                
+                const btn = document.getElementById('soundBtn');
+                const icon = document.getElementById('soundIcon');
+                if (this.muted) {
+                    btn.classList.add('muted');
+                    icon.setAttribute('data-lucide', 'volume-x');
+                } else {
+                    btn.classList.remove('muted');
+                    icon.setAttribute('data-lucide', 'volume-2');
+                }
+                lucide.createIcons();
+            }
+
+            playTone(freq, type, duration, vol = 1, slideTo = null) {
+                if (this.muted || !this.initialized) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                if (slideTo) {
+                    osc.frequency.exponentialRampToValueAtTime(slideTo, this.ctx.currentTime + duration);
+                }
+                
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.masterGain);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+
+            hover() {
+                this.playTone(2000, 'sine', 0.05, 0.1);
+            }
+
+            click() {
+                this.playTone(800, 'triangle', 0.1, 0.3, 300);
+            }
+
+            success() {
+                if (!this.initialized) return;
+                const notes = [440, 554, 659, 880];
+                notes.forEach((freq, i) => {
+                    setTimeout(() => this.playTone(freq, 'sine', 0.25, 0.28), i * 80);
+                });
+            }
+
+            error() {
+                this.playTone(150, 'sawtooth', 0.3, 0.4, 100);
+            }
+
+            bootUp() {
+                this.playTone(200, 'square', 0.8, 0.3, 1200);
+            }
+
+            processData() {
+                let count = 0;
+                const interval = setInterval(() => {
+                    if (count > 8) clearInterval(interval);
+                    const freq = 800 + Math.random() * 2000;
+                    this.playTone(freq, 'square', 0.05, 0.1);
+                    count++;
+                }, 100);
+            }
+        }
+
+        const SFX = new SoundSystem();
+
+        // --- GLOBAL STATE ---
+        let currentUser = null;
+        let currentTemp = 0;
+        const html = document.documentElement;
+        
+        // --- LOCAL STORAGE HELPERS ---
+        function getUserData(username) {
+            const data = localStorage.getItem('weather_user_' + username);
+            if (data) return JSON.parse(data);
+            return {
+                username: username,
+                preferences: {
+                    theme: 'dark',
+                    defaultRegion: 'South',
+                    tempUnit: 'C'
+                },
+                history: []
+            };
+        }
+
+        function saveUserData() {
+            if (!currentUser) return;
+            localStorage.setItem('weather_user_' + currentUser.username, JSON.stringify(currentUser));
+        }
+        
+        // --- SIDE PANEL HELPERS ---
+        function updateSidePanel() {
+            const themeAttr = html.getAttribute('data-theme') || 'dark';
+            const weatherCode = html.getAttribute('data-weather') || 'clear';
+            const regionSelect = document.getElementById('region-select');
+
+            const themeLabel = themeAttr === 'dark' ? 'Dark Ops' : 'Light Ops';
+            const weatherMap = {
+                clear: 'Clear Skies',
+                sunny: 'Sunny Window',
+                cloudy: 'Cloud Cover',
+                rain: 'Rain Cell',
+                storm: 'Storm Front',
+                snow: 'Snow Field'
+            };
+            const weatherLabel = weatherMap[weatherCode] || 'Clear Skies';
+            const regionLabel = regionSelect ? regionSelect.options[regionSelect.selectedIndex].text : 'N/A';
+
+            const sideTheme = document.getElementById('side-theme');
+            const sideWeather = document.getElementById('side-weather');
+            const sideRegion = document.getElementById('side-region');
+            const sideConf = document.getElementById('side-confidence');
+
+            if (sideTheme) sideTheme.textContent = themeLabel;
+            if (sideWeather) sideWeather.textContent = weatherLabel;
+            if (sideRegion) sideRegion.textContent = regionLabel;
+
+            if (currentUser && currentUser.history && currentUser.history[0]) {
+                if (sideConf) sideConf.textContent = currentUser.history[0].confidence + '%';
+            } else if (sideConf) {
+                sideConf.textContent = '--';
+            }
+        }
+
+        function updateClock() {
+            const clockEl = document.getElementById('side-clock');
+            if (!clockEl) return;
+            const now = new Date();
+            clockEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function generateSessionId() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let id = '';
+            for (let i = 0; i < 6; i++) {
+                id += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const el = document.getElementById('side-session-id');
+            if (el) el.textContent = id;
+        }
+
+        // --- DIAGNOSTIC CONTROLS ---
+        function setWeather(weatherType) {
+            html.setAttribute('data-weather', weatherType);
+            updateSidePanel();
+            SFX.click();
+        }
+
+        // --- SOUND LISTENERS ---
+        function attachSoundListeners() {
+            document.querySelectorAll('button, select, input, details summary').forEach(el => {
+                if (el.dataset.soundBound) return;
+                el.addEventListener('mouseenter', () => SFX.hover());
+                el.addEventListener('click', () => {
+                    if (!SFX.initialized) SFX.init();
+                });
+                el.dataset.soundBound = "true";
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            attachSoundListeners();
+            document.getElementById('soundBtn').addEventListener('click', () => SFX.toggleMute());
+            setInterval(updateClock, 1000);
+            updateClock();
+            generateSessionId();
+            updateSidePanel();
+        });
+
+        // --- LOGIN LOGIC ---
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            SFX.click();
+            SFX.bootUp();
+            
+            const usernameInput = document.getElementById('username-input').value.toUpperCase().trim();
+            const btn = this.querySelector('.btn-primary');
+            const btnText = btn.querySelector('.btn-text');
+            const loader = btn.querySelector('.loader');
+
+            if (!usernameInput) return;
+
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+
+            setTimeout(() => {
+                currentUser = getUserData(usernameInput);
+                
+                applyTheme(currentUser.preferences.theme);
+                document.getElementById('region-select').value = currentUser.preferences.defaultRegion;
+                document.getElementById('setting-region').value = currentUser.preferences.defaultRegion;
+                document.getElementById('setting-temp-unit').value = currentUser.preferences.tempUnit;
+                
+                updateUnitLabels();
+                updateSidePanel();
+
+                document.getElementById('display-username').innerText = currentUser.username;
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('app-view').classList.remove('hidden');
+                
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+                
+                attachSoundListeners();
+                SFX.success();
+            }, 800);
+        });
+
+        function logout() {
+            SFX.click();
+            currentUser = null;
+            document.getElementById('app-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('login-form').reset();
+            html.setAttribute('data-weather', 'clear');
+            updateSidePanel();
+        }
+
+        // --- TAB NAVIGATION ---
+        function switchTab(tabName) {
+            SFX.click();
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            const buttons = document.querySelectorAll('.nav-btn');
+            if(tabName === 'predict') buttons[0].classList.add('active');
+            if(tabName === 'history') { 
+                buttons[1].classList.add('active');
+                renderHistory();
+            }
+            if(tabName === 'settings') buttons[2].classList.add('active');
+
+            document.getElementById('tab-predict').classList.add('hidden');
+            document.getElementById('tab-history').classList.add('hidden');
+            document.getElementById('tab-settings').classList.add('hidden');
+            
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+        }
+
+        // --- HISTORY LOGIC ---
+        function renderHistory() {
+            const container = document.getElementById('history-container');
+            container.innerHTML = '';
+
+            if (!currentUser || !currentUser.history || currentUser.history.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 2rem;">No archived data found.</div>';
+                return;
+            }
+
+            currentUser.history.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'history-item';
+                el.innerHTML = `
+                    <div>
+                        <div class="history-meta">${new Date(item.timestamp).toLocaleString()} | Sector: ${item.region}</div>
+                        <div class="history-condition">${item.result}</div>
+                    </div>
+                    <div style="text-align: right; color: var(--primary-neon); font-family: var(--font-display);">
+                        ${item.confidence}%
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function clearHistory() {
+            SFX.error();
+            if(confirm("Are you sure you want to purge all mission logs? This cannot be undone.")) {
+                if (!currentUser) return;
+                currentUser.history = [];
+                saveUserData();
+                renderHistory();
+                updateSidePanel();
+            }
+        }
+
+        // --- SETTINGS LOGIC ---
+        function saveSettings() {
+            SFX.click();
+            if (!currentUser) return;
+            const newRegion = document.getElementById('setting-region').value;
+            const newUnit = document.getElementById('setting-temp-unit').value;
+            
+            currentUser.preferences.defaultRegion = newRegion;
+            currentUser.preferences.tempUnit = newUnit;
+            
+            document.getElementById('region-select').value = newRegion;
+            
+            updateUnitLabels();
+            saveUserData();
+            updateSidePanel();
+            SFX.success();
+            alert("System Configuration Saved.");
+        }
+        
+        function updateUnitLabels() {
+            if (!currentUser) return;
+            const unit = currentUser.preferences.tempUnit;
+            const label = document.getElementById('label-temp');
+            const unitSpans = document.querySelectorAll('.temp-unit');
+            
+            if(unit === 'F') {
+                label.innerText = 'Thermal (°F)';
+                unitSpans.forEach(s => s.innerText = '°F');
+            } else {
+                label.innerText = 'Thermal (°C)';
+                unitSpans.forEach(s => s.innerText = '°C');
+            }
+        }
+
+        // --- THEME SWITCHER LOGIC ---
+        const themeBtn = document.getElementById('themeBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        
+        function applyTheme(theme) {
+            html.setAttribute('data-theme', theme);
+            themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+            lucide.createIcons();
+            updateSidePanel();
+        }
+
+        themeBtn.addEventListener('click', () => {
+            SFX.click();
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            if (currentUser) {
+                currentUser.preferences.theme = newTheme;
+                saveUserData();
+            }
+        });
+
+        // --- ADVISORY SYSTEM ---
+        const advisoryMap = {
+            'SUNNY': "Solar radiation levels detected. Ocular shielding advised.",
+            'RAIN': "Precipitation detected. Deployment of umbrella barriers recommended.",
+            'CLOUDY': "Photovoltaic efficiency reduced. Standard visibility conditions.",
+            'STORM': "Hazardous atmospheric instability. Seek reinforced shelter immediately.",
+            'SNOW': "Thermal regulation critical. Sub-zero environment detected."
+        };
+
+        // --- PREDICTION LOGIC ---
+        document.getElementById('prediction-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            SFX.click();
+            
+            const btn = this.querySelector('.btn-primary');
+            const btnText = btn.querySelector('.btn-text');
+            const loader = btn.querySelector('.loader');
+            const resultBox = document.getElementById('result-box');
+            const probBox = document.getElementById('prob-box');
+            const resultIcon = document.getElementById('result-icon');
+            const comparisonBox = document.getElementById('comparison-box');
+            const showCompBtn = document.getElementById('btn-show-compare');
+            
+            const formData = new FormData(this);
+            const region = formData.get('region');
+            currentTemp = parseFloat(formData.get('temperature_c'));
+
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+            resultBox.style.display = 'none';
+            probBox.style.display = 'none';
+            comparisonBox.style.display = 'none';
+            showCompBtn.style.display = 'none';
+
+            SFX.processData();
+
+            setTimeout(() => {
+                loader.style.display = 'none';
+                btnText.style.display = 'block';
+                btnText.innerText = "Re-Initialize";
+                
+                const weatherTypes = [
+                    { code: 'sunny', label: 'SUNNY', icon: 'sun' },
+                    { code: 'rain', label: 'RAIN', icon: 'cloud-rain' },
+                    { code: 'cloudy', label: 'CLOUDY', icon: 'cloud' },
+                    { code: 'storm', label: 'STORM', icon: 'cloud-lightning' },
+                    { code: 'snow', label: 'SNOW', icon: 'snowflake' }
+                ];
+                const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+                
+                html.setAttribute('data-weather', randomWeather.code);
+                document.getElementById('pred-condition').innerText = randomWeather.label;
+                resultIcon.setAttribute('data-lucide', randomWeather.icon);
+                
+                document.getElementById('pred-advice').innerText = advisoryMap[randomWeather.label] || "Atmospheric scan complete.";
+                
+                lucide.createIcons();
+                
+                const mockConf = (Math.random() * (99 - 85) + 85).toFixed(1);
+                document.getElementById('pred-confidence').innerText = mockConf + "%";
+
+                resultBox.style.display = 'grid';
+                probBox.style.display = 'block';
+                showCompBtn.style.display = 'inline-flex';
+                
+                resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                SFX.success();
+
+                if (currentUser) {
+                    currentUser.history.unshift({
+                        timestamp: new Date().toISOString(),
+                        region: region,
+                        result: randomWeather.label,
+                        confidence: mockConf
+                    });
+                    saveUserData();
+                }
+
+                updateSidePanel();
+            }, 1200);
+        });
+
+        document.getElementById('btn-show-compare').addEventListener('click', function() {
+            showComparison();
+        });
+
+        function showComparison() {
+            SFX.click();
+            const box = document.getElementById('comparison-box');
+            
+            const lastTemp = (currentTemp + (Math.random() * 4 - 2)).toFixed(1);
+            const diff = (currentTemp - lastTemp).toFixed(1);
+            
+            document.getElementById('comp-temp-now').innerText = currentTemp;
+            document.getElementById('comp-temp-last').innerText = lastTemp;
+            
+            const diffEl = document.getElementById('comp-temp-diff');
+            if (diff > 0) {
+                diffEl.innerHTML = `▲ +${diff}`;
+                diffEl.className = 'diff-up';
+            } else if (diff < 0) {
+                diffEl.innerHTML = `▼ ${diff}`;
+                diffEl.className = 'diff-down';
+            } else {
+                diffEl.innerHTML = `— 0.0`;
+                diffEl.className = '';
+            }
+
+            box.style.display = 'block';
+            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    </script>
 </body>
 </html>
